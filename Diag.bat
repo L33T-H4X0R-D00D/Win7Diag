@@ -1,10 +1,11 @@
 @ECHO OFF
 SETLOCAL
 
-set version=Version 22.
-set updated=Last updated 11/20/2015.
+set version=Version 23.
+set updated=Last updated 3/23/2016.
 set compatibility=Compatible with Windows 7 and Windows 2008 R2.
 set incompatibility=Incompatible with Windows Vista.
+rem Please find the newest version at https://github.com/L33T-H4X0R-D00D/Win7Diag
 rem Log file is generated in the same directory as the script.
 PUSHD "%~dp0"
 cls
@@ -69,11 +70,12 @@ echo 14 Check if TRIM is enabled - Instant.
 echo 15 Open godmode settings - Instant.
 echo 16 Fix hidden devices in device manager - Instant.
 echo 17 Reset NTP source to pool.ntp.org - Instant.
+echo 18 Flush Windows DNS server cache - Instant.
 echo E  EXIT.
 echo.
 
 rem Menu input commands.  These lead to anchors in the display section which then makes calls to the functions.
-SET /P M=Type 1 - 17 or E then press ENTER:
+SET /P M=Type 1 - 18 or E then press ENTER:
 IF %M%==1 GOTO :basicworkstation
 IF %M%==2 GOTO :enhancedworkstation
 IF %M%==3 GOTO :enhancedworkstationimportlogs
@@ -91,6 +93,7 @@ IF %M%==14 GOTO :trimcheck
 IF %M%==15 GOTO :godmode
 IF %M%==16 GOTO :devicemanager
 IF %M%==17 GOTO :timefix
+IF %M%==18 GOTO :flushdnsservercache
 IF %M%==E GOTO :end
 IF %M%==e GOTO :end
 IF %M%==starwars GOTO :starwars
@@ -397,6 +400,14 @@ goto :menu
 :timefix
 echo This will reset your NTP source to Pool.NTP.Org.
 call:ftimefix
+goto :menu
+
+:flushdnsservercache
+echo This will flush the DNS cache on a Windows DNS
+echo server.  Use this option if you need to expire
+echo a dynamic entry currently being served by 
+echo Windows DNS.  Static entries will be unaffected. 
+call:fflushdnsservercache
 goto :menu
 
 :starwars
@@ -846,6 +857,14 @@ rem http://www.sysadminlab.net/windows/configuring-ntp-on-windows-2008-r2
 w32tm /config /manualpeerlist:pool.ntp.org,0x8 /syncfromflags:MANUAL
 net stop w32time
 net start w32time
+goto:eof
+
+:fflushdnsservercache
+cls
+dnscmd /Info >> results.txt
+dnscmd /Statistics >> results.txt
+dnscmd %COMPUTERNAME% /clearcache
+pause
 goto:eof
 
 :fend
